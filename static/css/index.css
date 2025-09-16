@@ -100,11 +100,11 @@ body {
 }
 
 .hero-body {
-  padding: 4rem 1.5rem;
+  padding: 4rem 1.5rem 2rem 1.5rem;
 }
 
 .teaser .hero-body {
-  padding-top: 2rem;
+  padding-top: 1rem;
   padding-bottom: 4rem;
 }
 
@@ -234,32 +234,42 @@ body {
 /* 幻灯片展示组件样式 */
 .slideshow-container {
   position: relative;
+  width: 100%;
+  height: 400px; /* 固定高度确保两个容器大小一致 */
+  min-height: 400px; /* 最小高度 */
   max-width: 100%;
   margin: 0 auto;
   background: var(--background-primary);
   border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   overflow: hidden;
-  height: 400px; /* 固定高度确保两个容器大小一致 */
-  min-height: 400px; /* 最小高度 */
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .slide-wrapper {
   position: relative;
   width: 100%;
-  height: 100%; /* 使用100%高度而不是padding-bottom */
+  height: 100%;
   overflow: hidden;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
 }
 
 .slide-image {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
   object-fit: contain;
   background: white;
   transition: opacity 0.3s ease;
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .slide-controls {
@@ -315,43 +325,6 @@ body {
 }
 
 /* 确保两个幻灯片容器始终等大和对齐 */
-.slideshow-container {
-  position: relative;
-  width: 100%;
-  height: 400px; /* 固定高度确保两个容器大小一致 */
-  min-height: 400px; /* 最小高度 */
-  max-width: 100%;
-  margin: 0 auto;
-  background: var(--background-primary);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-lg);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.slide-wrapper {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.slide-image {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  background: white;
-  transition: opacity 0.3s ease;
-  display: block;
-  margin: 0 auto;
-}
 
 /* 确保两个列容器高度一致 */
 .columns.is-centered .column.is-half {
