@@ -1,100 +1,411 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Auto-Slides: Automatic Academic Presentation Generation</title>
 
-  <!-- Meta Info -->
+  <!-- Meta tags -->
   <meta name="description" content="Auto-Slides: A multi-agent system for automatically generating academic presentation slides from research papers, with interactive refinement.">
-  <meta name="keywords" content="HCI, Multi-Agent System, AI, Academic Slides, Paper2Slides">
-  <meta name="author" content="Yuheng Yang, Wenjia Jiang, Yang Wang, Yiwei Wang, Chi Zhang">
+  <meta property="og:title" content="Auto-Slides: Automatic Academic Presentation Generation with Multi-Agent Collaboration" />
+  <meta property="og:description" content="Transform academic papers into high-quality, customizable presentation slides." />
+  <meta property="og:url" content="https://wzsyyh.github.io/Auto-Slides/" />
+  <meta property="og:image" content="static/images/teaser.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
 
-  <link rel="icon" href="static/images/favicon.ico">
+  <title>Auto-Slides: Automatic Academic Presentation Generation</title>
+  <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+  <!-- Critical CSS - Load synchronously -->
   <link rel="stylesheet" href="static/css/bulma.min.css">
   <link rel="stylesheet" href="static/css/index.css">
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-    .hero img { max-width: 100%; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    footer { margin-top: 50px; padding: 20px; text-align: center; font-size: 14px; color: #555; }
-    pre { background: #f5f5f5; padding: 15px; border-radius: 8px; overflow-x: auto; }
-  </style>
+  
+  <!-- Non-critical CSS - Load asynchronously -->
+  <link rel="preload" href="static/css/fontawesome.all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  
+  <!-- Fallback for browsers that don't support preload -->
+  <noscript>
+    <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  </noscript>
+  
+  <!-- Defer non-critical JavaScript -->
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script defer src="static/js/index.js"></script>
+  
+  <!-- 内联测试脚本和备用函数 -->
+  <script>
+    // 幻灯片数据
+    const slideData = {
+      slides1: { current: 1, total: 13, prefix: 'slides1' },
+      slides2: { current: 1, total: 14, prefix: 'slides2' }
+    };
+    
+    // 修复的changeSlide函数
+    function changeSlide(slideSet, direction) {
+      console.log('changeSlide called:', slideSet, direction);
+      const data = slideData[slideSet];
+      if (!data) return;
+      
+      data.current += direction;
+      if (data.current > data.total) data.current = 1;
+      if (data.current < 1) data.current = data.total;
+      
+      console.log('New slide number:', data.current);
+      
+      const slideId = slideSet === 'slides1' ? 'slide1' : 'slide2';
+      const counterId = slideSet + '-counter';
+      
+      const img = document.getElementById(slideId);
+      const counter = document.getElementById(counterId);
+      
+      console.log('Image element:', img);
+      console.log('Counter element:', counter);
+      
+      // 即使找不到counter也要更新图片
+      if (img) {
+        const slideNumber = data.current.toString().padStart(2, '0');
+        const newSrc = `static/images/${data.prefix}/${data.prefix}_${slideNumber}.png`;
+        console.log('Changing to:', newSrc);
+        
+        // 添加渐变切换效果
+        img.style.transition = 'opacity 0.3s ease-in-out';
+        img.style.opacity = '0';
+        
+        // 等待淡出完成后切换图片
+        setTimeout(() => {
+          img.src = newSrc + '?t=' + Date.now();
+          console.log('Image src updated to:', img.src);
+          
+          // 监听图片加载完成
+          img.onload = function() {
+            img.style.opacity = '1';
+            console.log('Image loaded and displayed');
+          };
+          
+          img.onerror = function() {
+            console.log('Image failed to load:', newSrc);
+            img.style.opacity = '1';
+          };
+        }, 150); // 等待150ms让淡出效果完成
+        
+        // 立即更新counter，不等待图片加载
+        if (counter) {
+          counter.textContent = data.current;
+          console.log('Counter updated to:', data.current);
+        } else {
+          console.log('Counter not found, trying alternative selector...');
+          // 尝试其他选择器
+          const altCounter = document.querySelector(`#${slideId}-counter`);
+          if (altCounter) {
+            altCounter.textContent = data.current;
+            console.log('Counter found with alternative selector, updated to:', data.current);
+          } else {
+            console.log('Counter still not found with alternative selector');
+          }
+        }
+        
+        console.log('Slide updated successfully');
+      } else {
+        console.log('ERROR: Image element not found!');
+      }
+    }
+    
+    // 确保函数在全局作用域中可用
+    window.changeSlide = changeSlide;
+    
+    // 页面加载后测试
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM loaded, changeSlide function ready');
+      
+      // 延迟检查，确保所有元素都已渲染
+      setTimeout(() => {
+        // 检查元素是否存在
+        const slide1 = document.getElementById('slide1');
+        const slide2 = document.getElementById('slide2');
+        const counter1 = document.getElementById('slide1-counter');
+        const counter2 = document.getElementById('slide2-counter');
+        
+        console.log('Elements check (delayed):');
+        console.log('slide1:', slide1);
+        console.log('slide2:', slide2);
+        console.log('slide1-counter:', counter1);
+        console.log('slide2-counter:', counter2);
+        
+        // 测试图片路径
+        const testImg = new Image();
+        testImg.onload = function() {
+          console.log('Test image loaded successfully');
+        };
+        testImg.onerror = function() {
+          console.log('Test image failed to load');
+        };
+        testImg.src = 'static/images/slides1/slides1_02.png';
+        
+        // 测试counter更新
+        if (counter1) {
+          console.log('Testing counter1 update...');
+          counter1.textContent = 'TEST';
+          setTimeout(() => {
+            counter1.textContent = '1';
+            console.log('Counter1 reset to 1');
+          }, 2000);
+        }
+      }, 1000);
+    });
+  </script>
 </head>
+
 <body>
-
-<section class="hero is-light">
-  <div class="hero-body has-text-centered">
-    <h1 class="title is-2">Auto-Slides</h1>
-    <h2 class="subtitle is-4">Automatic Academic Presentation Generation with Multi-Agent Collaboration</h2>
-    <p>
-      <strong>Authors:</strong> Yuheng Yang, Wenjia Jiang, Yang Wang, Yiwei Wang, Chi Zhang
-    </p>
-    <div style="margin-top: 15px;">
-      <a class="button is-dark is-rounded" href="https://arxiv.org/abs/2509.11062" target="_blank">📄 Paper</a>
-      <a class="button is-dark is-rounded" href="https://github.com/wzsyyh/Auto-Slides" target="_blank">💻 Code</a>
+  <!-- Title and Authors -->
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-1 publication-title">Auto-Slides: Automatic Academic Presentation Generation with Multi-Agent Collaboration</h1>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block"><a href="https://github.com/wzsyyh" target="_blank">Yuheng Yang</a><sup>1</sup>,</span>
+              <span class="author-block"><a href="https://github.com/jwj1342" target="_blank">Wenjia Jiang</a><sup>1</sup>,</span>
+              <span class="author-block"><a href="https://github.com/gnawyymmij" target="_blank">Yang Wang</a><sup>1</sup>,</span>
+              <span class="author-block"><a href="https://github.com/wangywUST" target="_blank">Yiwei Wang</a><sup>2</sup>,</span>
+              <span class="author-block"><a href="https://icoz69.github.io/" target="_blank">Chi Zhang</a><sup>1,*</sup></span>
+            </div>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block"><sup>1</sup>AGI Lab, Westlake University</span><br>
+              <span class="author-block"><sup>2</sup>University of California at Merced</span>
+            </div>
+            <div class="column has-text-centered" style="margin-top: 20px;">
+              <div class="publication-links">
+                <span class="link-block">
+                  <a href="https://arxiv.org/pdf/2509.11062.pdf" target="_blank" class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon"><i class="fas fa-file-pdf"></i></span>
+                    <span>Paper</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="https://github.com/wzsyyh/Auto-Slides" target="_blank" class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon"><i class="fab fa-github"></i></span>
+                    <span>Code</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="https://arxiv.org/abs/2509.11062" target="_blank" class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon"><i class="ai ai-arxiv"></i></span>
+                    <span>arXiv</span>
+                  </a>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="section">
-  <div class="container has-text-centered">
-    <img src="static/images/teaser.png" alt="Teaser">
-    <p class="has-text-grey" style="margin-top:10px;">
-      Fig. 1. An overview of Auto-Slides' capabilities. Left: Users can generate complete academic presentation slides from an academic paper. Right: Users can iteratively revise the generated slides by providing high-level natural language instructions.
-    </p>
-  </div>
-</section>
-
-<section class="section">
-  <div class="container is-max-desktop">
-    <h2 class="title is-3 has-text-centered">Abstract</h2>
-    <div class="content has-text-justified">
-      <p>
-        Creating academic presentations is a complex, time-consuming task that requires researchers to synthesize intricate paper content into clear, digestible slides. While Large Language Models (LLMs) have become widespread for content generation, they still struggle with handling multimodal academic content, ensuring factual accuracy, and offering precise interactive control. This often results in automated tools that fall short of professional standards.
-      </p>
-      <p>
-        To address these challenges, we introduce Auto-Slides, an innovative multi-agent system designed to transform academic papers into high-quality, customizable presentation slides. Drawing inspiration from cognitive science and instructional design, our system integrates content understanding, quality assurance, and interactive optimization to generate slides that are both accurate and pedagogically effective.
-      </p>
+  <!-- Teaser Image -->
+  <section class="hero teaser">
+    <div class="container is-max-desktop">
+      <div class="hero-body has-text-centered">
+        <div class="columns is-centered">
+          <div class="column is-five-sixths">
+            <img src="static/images/teaser.png" alt="Teaser" style="max-width:100%; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+            <p class="has-text-grey has-text-left" style="margin-top:10px;">
+              Fig. 1. An overview of Auto-Slides' capabilities. Left: Users can generate complete academic presentation slides from an academic
+              paper. Right: Users can iteratively revise the generated slides by providing high-level natural language instructions, enabling efficient
+              and precise slide editing.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="section">
-  <div class="container has-text-centered">
-    <img src="static/images/method.png" alt="Method">
-    <p class="has-text-grey" style="margin-top:10px;">
-      Fig. 2. Overview of Auto-Slides. Our multi-agent architecture orchestrates the transformation of academic papers into presentation slides through a three-phase pipeline.
-    </p>
-  </div>
-</section>
+  <!-- Generated Slides Showcase -->
+  <section class="hero is-small">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <h2 class="title is-3 has-text-centered">Generated Slides Examples</h2>
+        
+        <!-- Examples Side by Side -->
+        <div class="columns is-centered">
+          <!-- Example 1: Slides1 -->
+          <div class="column is-half">
+            <div class="has-text-centered">
+              <h3 class="subtitle is-4" style="margin-bottom: 1rem;">Learning to Be A Doctor: Searching for Effective Medical Agent Architectures</h3>
+              <div class="slideshow-container">
+                <div class="slide-wrapper">
+                  <img id="slide1" src="static/images/slides1/slides1_01.png" alt="Slide 1" class="slide-image"/>
+                  <div class="slide-controls">
+                    <button class="slide-btn prev-btn" onclick="changeSlide('slides1', -1)">
+                      <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="slide-counter">
+                      <span id="slide1-counter">1</span> / <span id="slide1-total">13</span>
+                    </span>
+                    <button class="slide-btn next-btn" onclick="changeSlide('slides1', 1)">
+                      <i class="fas fa-chevron-right"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="has-text-centered" style="margin-top: 15px;">
+                <a href="static/pdfs/slides1.pdf" target="_blank" class="button is-small is-rounded is-dark">
+                  <span class="icon"><i class="fas fa-download"></i></span>
+                  <span>Download PDF</span>
+                </a>
+              </div>
+            </div>
+          </div>
 
-<section class="section">
-  <div class="container has-text-centered">
-    <img src="static/images/interactive_pre.png" alt="Interactive">
-    <p class="has-text-grey" style="margin-top:10px;">
-      Fig. 3. Interactive optimization workflow. Users issue natural language requests to modify slides, and the Editor Agent updates the LaTeX source and returns revised slides.
-    </p>
-  </div>
-</section>
+          <!-- Example 2: Slides2 -->
+          <div class="column is-half">
+            <div class="has-text-centered">
+              <h3 class="subtitle is-4" style="margin-bottom: 1rem;">StyleStudio: Text-Driven Style Transfer with Selective Control of Style Elements</h3>
+              <div class="slideshow-container">
+                <div class="slide-wrapper">
+                  <img id="slide2" src="static/images/slides2/slides2_01.png" alt="Slide 1" class="slide-image"/>
+                  <div class="slide-controls">
+                    <button class="slide-btn prev-btn" onclick="changeSlide('slides2', -1)">
+                      <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="slide-counter">
+                      <span id="slide2-counter">1</span> / <span id="slide2-total">14</span>
+                    </span>
+                    <button class="slide-btn next-btn" onclick="changeSlide('slides2', 1)">
+                      <i class="fas fa-chevron-right"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="has-text-centered" style="margin-top: 15px;">
+                <a href="static/pdfs/slides2.pdf" target="_blank" class="button is-small is-rounded is-dark">
+                  <span class="icon"><i class="fas fa-download"></i></span>
+                  <span>Download PDF</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<section class="section">
-  <div class="container is-max-desktop">
-    <h2 class="title is-3 has-text-centered">BibTeX</h2>
-    <pre><code>@article{yang2025auto,
+  <!-- Abstract -->
+  <section class="section hero is-light">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              Creating academic presentations is a complex, time-consuming task that requires researchers to synthesize intricate paper content into clear, digestible slides. While Large Language Models (LLMs) have become widespread for content generation, they still struggle with handling multimodal academic content, ensuring factual accuracy, and offering precise interactive control. This often results in automated tools that fall short of professional standards.To address these challenges, we introduce Auto-Slides, an innovative multi-agent system designed to transform academic papers into high-quality, customizable presentation slides. Drawing inspiration from cognitive science and instructional design, our system integrates content understanding, quality assurance, and interactive optimization to generate slides that are both accurate and pedagogically effective.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Method -->
+  <section class="section hero is-light">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Method</h2>
+          <div class="content has-text-justified">
+            <p>
+              Our approach leverages a multi-agent architecture to transform academic papers into presentation slides. The system operates through three distinct phases: content understanding and structuring, quality assurance and refinement, and generation with interactive optimization. The multi-agent architecture of Auto-Slides is detailed in Figure 2, while the interactive optimization workflow is illustrated in Figure 3.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Method Image -->
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-five-sixths">
+          <img src="static/images/method.png" alt="Method" style="max-width:100%; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+          <p class="has-text-grey has-text-left" style="margin-top:10px;">
+            Fig. 2. Overview of Auto-Slides. Our multi-agent architecture orchestrates the transformation of academic papers into presentation
+            slides through a three-phase pipeline: (1) Content Understanding and Structuring, where the Parser and Planner Agents analyze
+            the source material and design the slide structure in JSON format specifying content, figures, and tables for each slide. (2) Quality
+            Assurance and Refinement, where the Verification and Adjustment Agents ensure content fidelity and completeness. (3) Generation
+            and Interactive Optimization, where the Generator Agent produces the final presentation slides in LaTeX code format and the Editor
+            Agent facilitates human-in-the-loop revisions via natural language dialogue.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Image -->
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-five-sixths">
+          <img src="static/images/interactive_pre.png" alt="Interactive" style="max-width:100%; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+          <p class="has-text-grey has-text-left" style="margin-top:10px;">
+            Fig. 3. Interactive optimization workflow. The user issues a natural language request to modify the presentation—for example,
+            adding an explanatory slide on a specific concept. The Editor Agent interprets the request, locates the relevant slide segments,
+            performs content retrieval and code-level modifications using a ReAct[41]-style process, compiles the updated LaTeX source, and
+            returns the revised slide deck to the user.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- BibTeX -->
+  <section class="hero is-light" id="BibTeX">
+    <div class="hero-body">
+      <div class="container">
+        <div class="columns is-centered">
+          <div class="column is-five-sixths">
+            <div class="content">
+              <h2 class="title" style="text-align:left;">BibTeX</h2>
+              <pre style="background-color:#f5f5f5; padding:1.5rem; border-radius:8px;">
+@article{yang2025autoslides,
   title={Auto-Slides: Automatic Academic Presentation Generation with Multi-Agent Collaboration},
   author={Yang, Yuheng and Jiang, Wenjia and Wang, Yang and Wang, Yiwei and Zhang, Chi},
   journal={arXiv preprint arXiv:2509.11062},
-  year={2025}
-}</code></pre>
-  </div>
-</section>
+  year={2025},
+  note={AGI Lab, Westlake University; University of California at Merced; Corresponding author: Chi Zhang},
+  url={https://wzsyyh.github.io/Auto-Slides/},
+  eprint={2509.11062},
+  archivePrefix={arXiv},
+  primaryClass={cs.AI}
+}
+              </pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<footer>
-  <p>
-    Built with <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project Page Template</a>. <br>
-    Licensed under <a href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">CC BY-SA 4.0</a>.
-  </p>
-</footer>
-
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content has-text-centered">
+            <p>
+              Built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project Page Template</a>, adapted from the <a href="https://nerfies.github.io" target="_blank">Nerfies</a> project page.<br>
+              Licensed under <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">CC BY-SA 4.0</a>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
 </body>
+
 </html>
